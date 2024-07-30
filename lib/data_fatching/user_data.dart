@@ -11,7 +11,8 @@ class UsersDataList extends StatefulWidget {
 }
 
 class _UsersDataListState extends State<UsersDataList> {
-  final usersRecordsFromDatabase = FirebaseDatabase.instance.ref().child("users");
+  final usersRecordsFromDatabase =
+      FirebaseDatabase.instance.ref().child("users");
   final CommonMethods cMethods = CommonMethods();
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
@@ -20,7 +21,7 @@ class _UsersDataListState extends State<UsersDataList> {
     return StreamBuilder(
       stream: usersRecordsFromDatabase.onValue,
       builder: (BuildContext context, snapshotData) {
-        if(snapshotData.hasError) {
+        if (snapshotData.hasError) {
           return const Center(
             child: Text(
               "Error Occurred. Try Later.",
@@ -33,7 +34,7 @@ class _UsersDataListState extends State<UsersDataList> {
           );
         }
 
-        if(snapshotData.connectionState == ConnectionState.waiting) {
+        if (snapshotData.connectionState == ConnectionState.waiting) {
           return const Center(
             child: CircularProgressIndicator(),
           );
@@ -55,59 +56,68 @@ class _UsersDataListState extends State<UsersDataList> {
               children: [
                 cMethods.data(
                   2,
-                  Text(itemsList[index]["id"].toString()),
+                  Text(itemsList[index]["id"].toString(),style: const TextStyle(color: Colors.white),),
                 ),
                 cMethods.data(
                   1,
-                  Text(itemsList[index]["name"].toString()),
+                  Text(itemsList[index]["name"].toString(),style: const TextStyle(color: Colors.white),),
                 ),
                 cMethods.data(
                   1,
-                  Text(itemsList[index]["email"].toString()),
+                  Text(itemsList[index]["email"].toString(),style: const TextStyle(color: Colors.white),),
                 ),
                 cMethods.data(
                   1,
-                  Text(itemsList[index]["phone"].toString()),
+                  Text(itemsList[index]["phone"].toString(),style: const TextStyle(color: Colors.white),),
                 ),
                 cMethods.data(
                   1,
                   itemsList[index]["blockStatus"] == "no"
                       ? MaterialButton(
-                    color: const Color.fromARGB(255, 4, 33, 76),
-                    onPressed: () async {
-                      await FirebaseDatabase.instance.ref()
-                          .child("users")
-                          .child(itemsList[index]["id"])
-                          .update({
-                        "blockStatus": "yes",
-                      });
-                      _checkAndLogout(itemsList[index]["id"]);
-                    },
-                    child: const Text(
-                      "Block",
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  )
-                      : ElevatedButton(
-                    onPressed: () async {
-                      await FirebaseDatabase.instance.ref()
-                          .child("users")
-                          .child(itemsList[index]["id"])
-                          .update({
-                        "blockStatus": "no",
-                      });
-                    },
-                    child: const Text(
-                      "Approve",
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
+                        minWidth: 20,
+                        height: 25,
+                          color: const Color.fromARGB(255, 4, 33, 76),
+                          onPressed: () async {
+                            await FirebaseDatabase.instance
+                                .ref()
+                                .child("users")
+                                .child(itemsList[index]["id"])
+                                .update({
+                              "blockStatus": "yes",
+                            });
+                            _checkAndLogout(itemsList[index]["id"]);
+                          },
+                          child: const Text(
+                            "Block",
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        )
+                      : MaterialButton(
+                        
+                        minWidth: 20,
+                        height: 25,
+                        
+                          color: const Color.fromARGB(255, 4, 33, 76),
+                          onPressed: () async {
+                            await FirebaseDatabase.instance
+                                .ref()
+                                .child("users")
+                                .child(itemsList[index]["id"])
+                                .update({
+                              "blockStatus": "no",
+                            });
+                          },
+                          child: const Text(
+                            "Approve",
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
                 ),
               ],
             );

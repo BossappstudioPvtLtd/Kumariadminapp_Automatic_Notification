@@ -1,13 +1,12 @@
-
+import 'package:animated_text_kit/animated_text_kit.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_admin_scaffold/admin_scaffold.dart';
 import 'package:kumari_admin_web/dashbord/dash_bord.dart';
 import 'package:kumari_admin_web/pages/driver_page.dart';
+import 'package:kumari_admin_web/pages/fere_oage.dart';
 import 'package:kumari_admin_web/pages/trips_page.dart';
 import 'package:kumari_admin_web/pages/user_page.dart';
-
-
 
 class SideNavigationDrawer extends StatefulWidget {
   const SideNavigationDrawer({super.key});
@@ -16,14 +15,11 @@ class SideNavigationDrawer extends StatefulWidget {
   State<SideNavigationDrawer> createState() => _SideNavigationDrawerState();
 }
 
-class _SideNavigationDrawerState extends State<SideNavigationDrawer>
-{
+class _SideNavigationDrawerState extends State<SideNavigationDrawer> {
   Widget chosenScreen = const Dashboard();
 
-  sendAdminTo(selectedPage)
-  {
-    switch(selectedPage.route)
-    {
+  sendAdminTo(selectedPage) {
+    switch (selectedPage.route) {
       case DriversPage.id:
         setState(() {
           chosenScreen = const DriversPage();
@@ -41,60 +37,91 @@ class _SideNavigationDrawerState extends State<SideNavigationDrawer>
           chosenScreen = const TripsPage();
         });
         break;
+
+         case  FarePage.id:
+        setState(() {
+          chosenScreen = const FarePage();
+        });
+        break;
+
     }
   }
 
   @override
-  Widget build(BuildContext context)
-  {
+  Widget build(BuildContext context) {
     return AdminScaffold(
       backgroundColor: const Color.fromRGBO(255, 255, 255, 1),
       appBar: AppBar(
         foregroundColor: Colors.white,
-        backgroundColor: const Color.fromARGB(255, 4, 33, 76),
-        title: const Text(
-          "Admin Web Panel",
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-          ),
+         centerTitle: true,
+        flexibleSpace: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: <Color>[
+               Color.fromARGB(255, 4, 33, 76),
+              Color.fromARGB(255, 6, 79, 188),
+            ])          
+         ),        
+     ),      
+        title: AnimatedTextKit(
+          totalRepeatCount: Duration.microsecondsPerMillisecond,
+          animatedTexts: [
+            WavyAnimatedText('Admin Web Panel',
+                textStyle: const TextStyle(
+                  fontSize: 20,
+                  color: Colors.white,
+                )),
+          ],
+          isRepeatingAnimation: true,
         ),
       ),
-      sideBar: SideBar(
-        activeTextStyle:const TextStyle(color:Colors.white54 ) ,
-        textStyle:const TextStyle(color:Colors.white54),
-        backgroundColor:const Color.fromARGB(255, 4, 33, 76) ,
-         activeBackgroundColor:const Color.fromARGB(255, 4, 33, 76) ,
-        iconColor:Colors.white54,
-        activeIconColor:Colors.white54,
+      sideBar: SideBar
+      (
+        activeTextStyle: const TextStyle(color: Colors.white),
+        textStyle: const TextStyle(color: Colors.white),
+        backgroundColor: const Color.fromARGB(255, 4, 33, 76),
+        activeBackgroundColor: const Color.fromARGB(255, 4, 33, 76),
+        iconColor: Colors.white,
+        activeIconColor: Colors.white,
         borderColor: Colors.black45,
         items: const [
-          AdminMenuItem(
-            
+           AdminMenuItem(
             title: "Drivers",
             route: DriversPage.id,
             icon: CupertinoIcons.car_detailed,
           ),
-          AdminMenuItem(
+           AdminMenuItem(
             title: "Users",
             route: UsersPage.id,
             icon: CupertinoIcons.person_2_fill,
           ),
-          AdminMenuItem(
+           AdminMenuItem(
             title: "Trips",
             route: TripsPage.id,
             icon: CupertinoIcons.location_fill,
           ),
+            AdminMenuItem(
+            title: "Fare",
+            route: FarePage.id,
+            icon: IconData(0xf05db, fontFamily: 'MaterialIcons')
+          ),
         ],
         selectedRoute: DriversPage.id,
-        onSelected: (selectedPage)
-        {
+        onSelected: (selectedPage) {
           sendAdminTo(selectedPage);
         },
         header: Container(
           height: 52,
           width: double.infinity,
-          color: const Color.fromARGB(255, 4, 33, 76),
+           decoration: const BoxDecoration(
+        gradient: LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: [Color.fromARGB(255, 12, 59, 131),Color.fromARGB(255, 4, 33, 76),],
+      ),
+        ),
           child: const Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -114,21 +141,29 @@ class _SideNavigationDrawerState extends State<SideNavigationDrawer>
         ),
         footer: Container(
           height: 52,
-          width: double.infinity,
-          color:const Color.fromARGB(255, 4, 33, 76),
-          child: const Row(
+          width: double.infinity, decoration: const BoxDecoration(
+        gradient: LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: [Color.fromARGB(255, 12, 59, 131),Color.fromARGB(255, 4, 33, 76),],
+      ),
+        ),
+          child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
+              const Icon(
                 Icons.admin_panel_settings_outlined,
                 color: Colors.white,
               ),
-              SizedBox(
+              const SizedBox(
                 width: 10,
               ),
-              Icon(
-                Icons.computer,
-                color: Colors.white,
+              GestureDetector(
+                onTap: () {},
+                child: const Icon(
+                  Icons.computer,
+                  color: Colors.white,
+                ),
               ),
             ],
           ),

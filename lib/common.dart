@@ -36,7 +36,7 @@ class _DriverHomeState extends State<DriverHome> {
     await _auth.signOut();
     Navigator.of(context).pushReplacement(
       MaterialPageRoute(
-        builder: (context) => LoginScreen(),
+        builder: (context) => const LoginScreen(),
       ),
     );
   }
@@ -45,9 +45,9 @@ class _DriverHomeState extends State<DriverHome> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Driver Home'),
+        title: const Text('Driver Home'),
       ),
-      body: Center(
+      body: const Center(
         child: Text('Welcome, Driver!'),
       ),
     );
@@ -55,9 +55,11 @@ class _DriverHomeState extends State<DriverHome> {
 }
 
 class LoginScreen extends StatelessWidget {
+  const LoginScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return const Scaffold(
       body: Center(
         child: Text('Login Screen'),
       ),
