@@ -1,7 +1,9 @@
 
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:kumari_admin_web/auth/login.dart';
 import 'package:kumari_admin_web/dashbord/sidevavigationdrawer.dart';
+//import 'package:kumari_admin_web/dashbord/sidevavigationdrawer.dart';
 
 void main()async
 {
@@ -34,7 +36,7 @@ class MyApp extends StatelessWidget
       title: 'Admin Panel',
       theme: ThemeData(
       ),
-      home: const SideNavigationDrawer(),
+      home:  const SideNavigationDrawer(),
     );
   }
 }

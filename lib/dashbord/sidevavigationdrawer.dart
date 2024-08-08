@@ -1,12 +1,17 @@
 import 'package:animated_text_kit/animated_text_kit.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_admin_scaffold/admin_scaffold.dart';
+import 'package:kumari_admin_web/auth/admin_update.dart';
+import 'package:kumari_admin_web/auth/login.dart';
 import 'package:kumari_admin_web/dashbord/dash_bord.dart';
+import 'package:kumari_admin_web/pages/advertisement.dart';
 import 'package:kumari_admin_web/pages/driver_page.dart';
 import 'package:kumari_admin_web/pages/fere_oage.dart';
+import 'package:kumari_admin_web/pages/gift_page.dart';
 import 'package:kumari_admin_web/pages/trips_page.dart';
-import 'package:kumari_admin_web/pages/user_page.dart';
+import 'package:kumari_admin_web/pages/user_page.dart';// Import the login screen
 
 class SideNavigationDrawer extends StatefulWidget {
   const SideNavigationDrawer({super.key});
@@ -18,7 +23,22 @@ class SideNavigationDrawer extends StatefulWidget {
 class _SideNavigationDrawerState extends State<SideNavigationDrawer> {
   Widget chosenScreen = const Dashboard();
 
-  sendAdminTo(selectedPage) {
+  Future<void> _signOut() async {
+    try {
+      await FirebaseAuth.instance.signOut();
+      // Redirect to the LoginScreen
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const LoginScreen()),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error signing out: $e')),
+      );
+    }
+  }
+
+  void sendAdminTo(selectedPage) {
     switch (selectedPage.route) {
       case DriversPage.id:
         setState(() {
@@ -38,12 +58,20 @@ class _SideNavigationDrawerState extends State<SideNavigationDrawer> {
         });
         break;
 
-         case  FarePage.id:
+      case FarePage.id:
         setState(() {
           chosenScreen = const FarePage();
         });
         break;
-
+        
+      case GiftPage.id:
+      setState(() {
+        chosenScreen = const GiftPage();
+      });
+       case AdvertisementPage.id:
+      setState(() {
+        chosenScreen = const AdvertisementPage();
+      });
     }
   }
 
@@ -53,18 +81,17 @@ class _SideNavigationDrawerState extends State<SideNavigationDrawer> {
       backgroundColor: const Color.fromRGBO(255, 255, 255, 1),
       appBar: AppBar(
         foregroundColor: Colors.white,
-         centerTitle: true,
+        centerTitle: true,
         flexibleSpace: Container(
           decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: <Color>[
-               Color.fromARGB(255, 4, 33, 76),
-              Color.fromARGB(255, 6, 79, 188),
-            ])          
-         ),        
-     ),      
+              gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: <Color>[
+                Color.fromARGB(255, 4, 33, 76),
+                Color.fromARGB(255, 6, 79, 188),
+              ])),
+        ),
         title: AnimatedTextKit(
           totalRepeatCount: Duration.microsecondsPerMillisecond,
           animatedTexts: [
@@ -77,8 +104,7 @@ class _SideNavigationDrawerState extends State<SideNavigationDrawer> {
           isRepeatingAnimation: true,
         ),
       ),
-      sideBar: SideBar
-      (
+      sideBar: SideBar(
         activeTextStyle: const TextStyle(color: Colors.white),
         textStyle: const TextStyle(color: Colors.white),
         backgroundColor: const Color.fromARGB(255, 4, 33, 76),
@@ -87,26 +113,35 @@ class _SideNavigationDrawerState extends State<SideNavigationDrawer> {
         activeIconColor: Colors.white,
         borderColor: Colors.black45,
         items: const [
-           AdminMenuItem(
+          AdminMenuItem(
             title: "Drivers",
             route: DriversPage.id,
             icon: CupertinoIcons.car_detailed,
           ),
-           AdminMenuItem(
+          AdminMenuItem(
             title: "Users",
             route: UsersPage.id,
             icon: CupertinoIcons.person_2_fill,
           ),
-           AdminMenuItem(
+          AdminMenuItem(
             title: "Trips",
             route: TripsPage.id,
             icon: CupertinoIcons.location_fill,
           ),
-            AdminMenuItem(
-            title: "Fare",
-            route: FarePage.id,
-            icon: IconData(0xf05db, fontFamily: 'MaterialIcons')
+          AdminMenuItem(
+              title: "Fare",
+              route: FarePage.id,
+              icon: IconData(0xf05db, fontFamily: 'MaterialIcons')),
+               AdminMenuItem(
+            title: "Gift",
+            route: GiftPage.id,
+            icon: CupertinoIcons.gift_fill,
           ),
+           AdminMenuItem(
+              title: "Advertisement",
+              route: AdvertisementPage.id,
+            icon: CupertinoIcons.rectangle_3_offgrid_fill, ),
+             
         ],
         selectedRoute: DriversPage.id,
         onSelected: (selectedPage) {
@@ -115,24 +150,110 @@ class _SideNavigationDrawerState extends State<SideNavigationDrawer> {
         header: Container(
           height: 52,
           width: double.infinity,
-           decoration: const BoxDecoration(
-        gradient: LinearGradient(
-        begin: Alignment.topCenter,
-        end: Alignment.bottomCenter,
-        colors: [Color.fromARGB(255, 12, 59, 131),Color.fromARGB(255, 4, 33, 76),],
-      ),
-        ),
-          child: const Row(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                Color.fromARGB(255, 12, 59, 131),
+                Color.fromARGB(255, 4, 33, 76),
+              ],
+            ),
+          ),
+          child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
-                Icons.accessibility,
-                color: Colors.white,
+              GestureDetector(
+                onTap: () {
+                 showCupertinoModalPopup(context: context, builder: (BuildContext context){
+                  return Center(
+                    child: Container(
+                      decoration: BoxDecoration(borderRadius: BorderRadius.circular(16)),
+                      height: 400,
+                      width: 300,
+                      child: const AdminUpdate()),
+                  );
+                 });
+                },
+                child: const Icon(
+                  Icons.accessibility,
+                  color: Colors.white,
+                ),
               ),
-              SizedBox(
+              const SizedBox(
                 width: 10,
               ),
-              Icon(
+              GestureDetector(
+                onTap: () {
+                 showDialog<void>(
+    context: context,
+    barrierDismissible: false, // User must tap a button to dismiss the dialog
+    builder: (BuildContext context) {
+      return AlertDialog(
+        backgroundColor: Colors.white,
+        elevation: 20,
+        title: const Text(
+          'Email Sign Out',
+          style: TextStyle(
+            color: Colors.black,
+          ),
+        ),
+        content: const Text(
+          'Do you want to continue with sign out?',
+          style: TextStyle(
+            color: Colors.black,
+          ),
+        ),
+        actions: <Widget>[
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.of(context).pop(); // Close the dialog
+                },
+                style: ElevatedButton.styleFrom(
+                  foregroundColor: Colors.white, backgroundColor: Colors.red, // Text color
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+                child: const Text('Cancel'),
+              ),
+              ElevatedButton(
+                onPressed: () async {
+                  await _signOut();
+                  Navigator.of(context).pop(); // Close the dialog
+                  // Redirect to login screen
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(builder: (context) => const LoginScreen()),
+                  );
+                },
+                style: ElevatedButton.styleFrom(
+                  foregroundColor: Colors.white, backgroundColor: Colors.green, // Text color
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+                child: const Text('Continue'),
+              ),
+            ],
+          ),
+        ],
+      );
+    },
+  );
+                },
+                child: const Icon(
+                  Icons.power_settings_new_sharp,
+                  color: Colors.white,
+                ),
+              ),
+              const SizedBox(
+                width: 10,
+              ),
+              const Icon(
                 Icons.settings,
                 color: Colors.white,
               ),
@@ -141,13 +262,17 @@ class _SideNavigationDrawerState extends State<SideNavigationDrawer> {
         ),
         footer: Container(
           height: 52,
-          width: double.infinity, decoration: const BoxDecoration(
-        gradient: LinearGradient(
-        begin: Alignment.topCenter,
-        end: Alignment.bottomCenter,
-        colors: [Color.fromARGB(255, 12, 59, 131),Color.fromARGB(255, 4, 33, 76),],
-      ),
-        ),
+          width: double.infinity,
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                Color.fromARGB(255, 12, 59, 131),
+                Color.fromARGB(255, 4, 33, 76),
+              ],
+            ),
+          ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [

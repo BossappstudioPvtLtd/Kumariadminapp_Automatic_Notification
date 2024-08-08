@@ -30,13 +30,8 @@ class _TripsPageState extends State<TripsPage>
                 colors: <Color>[
                Color.fromARGB(255, 4, 33, 76),
               Color.fromARGB(255, 6, 79, 188),
-            ])        
-                ),
-           
-          
-        
-      
-        child: SingleChildScrollView(
+            ])),
+          child: SingleChildScrollView(
           child: Padding(
             padding: const EdgeInsets.all(25),
             child: Column(
@@ -58,9 +53,6 @@ class _TripsPageState extends State<TripsPage>
                       ),
                     ),
                 ),
-               
-              
-            
                 const SizedBox(
                   height: 18,
                 ),
@@ -78,8 +70,7 @@ class _TripsPageState extends State<TripsPage>
                 ),
             
                 //display data
-            
-                const TripsDataList(),
+             const TripsDataList(),
                 const SizedBox(height: 50,),
                  Container(
                         height: 40,
