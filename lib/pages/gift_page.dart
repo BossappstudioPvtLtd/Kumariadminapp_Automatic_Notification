@@ -1,14 +1,13 @@
 import 'dart:html' as html;
 import 'dart:typed_data';
 import 'package:animated_text_kit/animated_text_kit.dart';
-//import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dotted_border/dotted_border.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/widgets.dart';
-//import 'package:file_picker/file_picker.dart';
 import 'package:intl/intl.dart';
+import 'package:kumari_admin_web/Com/giftactivelist.dart';
 import 'package:kumari_admin_web/Com/m_button.dart';
 import 'package:kumari_admin_web/pages/gift_active.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -172,31 +171,72 @@ class _GiftPageState extends State<GiftPage> {
   }
 
   Future<void> _updateGiftOffer(GiftOffer offer) async {
-    final TextEditingController titleController       = TextEditingController(text: offer.title);
-    final TextEditingController descriptionController = TextEditingController(text: offer.description);
-    final TextEditingController postDateController    = TextEditingController(text: offer.postDate);
-    final TextEditingController expiryDateController  = TextEditingController(text: offer.expiryDate);
+    final TextEditingController titleController =
+        TextEditingController(text: offer.title);
+    final TextEditingController descriptionController =
+        TextEditingController(text: offer.description);
+    final TextEditingController postDateController =
+        TextEditingController(text: offer.postDate);
+    final TextEditingController expiryDateController =
+        TextEditingController(text: offer.expiryDate);
 
-    await showDialog( context: context, builder: (context) {
+    await showDialog(
+      context: context,
+      builder: (context) {
         return AlertDialog(
           title: const Text('Update Gift Offer'),
           content: SingleChildScrollView(
-            child: Column(crossAxisAlignment: CrossAxisAlignment.start,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                TextField(controller: titleController, decoration: const InputDecoration(
-                    labelText: 'Title',border: OutlineInputBorder(),), ),
-                const SizedBox(height: 20), TextField( controller: descriptionController,
-                  decoration: const InputDecoration( labelText: 'Description',
-                    border: OutlineInputBorder(),),),
-                const SizedBox(height: 20),GestureDetector(onTap: () => _selectDate(postDateController),
-                  child: AbsorbPointer(child: TextField( controller: postDateController,
-                      decoration: const InputDecoration(labelText: 'Post Date ', border: OutlineInputBorder(), ),
-                      keyboardType: TextInputType.datetime,),),),
+                TextField(
+                  controller: titleController,
+                  decoration: const InputDecoration(
+                    labelText: 'Title',
+                    border: OutlineInputBorder(),
+                  ),
+                ),
                 const SizedBox(height: 20),
-                GestureDetector(onTap: () => _selectDate(expiryDateController), child: AbsorbPointer(
-                    child: TextField( controller: expiryDateController,decoration: const InputDecoration(
-                        labelText: 'Expiry Date ', border: OutlineInputBorder(), ),
-                      keyboardType: TextInputType.datetime,),),),],),),actions:[ElevatedButton(
+                TextField(
+                  controller: descriptionController,
+                  decoration: const InputDecoration(
+                    labelText: 'Description',
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                GestureDetector(
+                  onTap: () => _selectDate(postDateController),
+                  child: AbsorbPointer(
+                    child: TextField(
+                      controller: postDateController,
+                      decoration: const InputDecoration(
+                        labelText: 'Post Date ',
+                        border: OutlineInputBorder(),
+                      ),
+                      keyboardType: TextInputType.datetime,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                GestureDetector(
+                  onTap: () => _selectDate(expiryDateController),
+                  child: AbsorbPointer(
+                    child: TextField(
+                      controller: expiryDateController,
+                      decoration: const InputDecoration(
+                        labelText: 'Expiry Date ',
+                        border: OutlineInputBorder(),
+                      ),
+                      keyboardType: TextInputType.datetime,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            ElevatedButton(
               onPressed: () async {
                 final String title = titleController.text;
                 final String description = descriptionController.text;
@@ -205,16 +245,38 @@ class _GiftPageState extends State<GiftPage> {
 
                 if (title.isNotEmpty && description.isNotEmpty) {
                   final updatedData = {
-                    'title': title,'description': description,'postDate': postDate,'expiryDate': expiryDate,
+                    'title': title,
+                    'description': description,
+                    'postDate': postDate,
+                    'expiryDate': expiryDate,
                   };
-                  if (_imageFile != null) {final imageUrl = await _uploadImage(_imageFile!);
-                    if (imageUrl != null) {updatedData['imageUrl'] = imageUrl;}
-                  } await _databaseReference.child(offer.key).update(updatedData);
-                  setState(() { _imageFile = null;  _imageBytes = null; });
-                  Navigator.of(context).pop(); } },
-              child: const Text('Update'), ),
-            ElevatedButton( onPressed: () {Navigator.of(context).pop(); },
-              child: const Text('Cancel'), ),], ); }, );}
+                  if (_imageFile != null) {
+                    final imageUrl = await _uploadImage(_imageFile!);
+                    if (imageUrl != null) {
+                      updatedData['imageUrl'] = imageUrl;
+                    }
+                  }
+                  await _databaseReference.child(offer.key).update(updatedData);
+                  setState(() {
+                    _imageFile = null;
+                    _imageBytes = null;
+                  });
+                  Navigator.of(context).pop();
+                }
+              },
+              child: const Text('Update'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('Cancel'),
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   Future<void> _deleteGiftOffer(String key) async {
     await _databaseReference.child(key).remove();
@@ -226,18 +288,42 @@ class _GiftPageState extends State<GiftPage> {
       child: AbsorbPointer(
         child: TextField(
           controller: controller,
-          decoration: InputDecoration( labelText: labelText,labelStyle: const TextStyle(color: Colors.white),
-            filled: true,fillColor: Colors.white30, border: const OutlineInputBorder(),),
-          style: const TextStyle(color: Colors.white), keyboardType: TextInputType.datetime,),),);}
+          decoration: InputDecoration(
+            labelText: labelText,
+            labelStyle: const TextStyle(color: Colors.white),
+            filled: true,
+            fillColor: Colors.white30,
+            border: const OutlineInputBorder(),
+          ),
+          style: const TextStyle(color: Colors.white),
+          keyboardType: TextInputType.datetime,
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(decoration: const BoxDecoration( gradient: LinearGradient( begin: Alignment.topLeft, end: Alignment.bottomRight,
-            colors: <Color>[ Color.fromARGB(255, 4, 33, 76), Color.fromARGB(255, 6, 79, 188), ], ), ),
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: <Color>[
+              Color.fromARGB(255, 4, 33, 76),
+              Color.fromARGB(255, 6, 79, 188),
+            ],
+          ),
+        ),
         child: SingleChildScrollView(
-          child: Padding( padding: const EdgeInsets.all(25), child: Column(crossAxisAlignment: CrossAxisAlignment.start,
-              children: [Padding(padding: const EdgeInsets.only(left: 10),
+          child: Padding(
+            padding: const EdgeInsets.all(25),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(left: 10),
                   child: Container(
                     height: 30,
                     alignment: Alignment.topLeft,
@@ -386,103 +472,134 @@ class _GiftPageState extends State<GiftPage> {
             }
           },
         ),
-        const SizedBox(height: 30,),
-        // MaterialButtons(
-          
-        //   textcolor: Colors.white,
-        //   borderRadius: BorderRadius.circular(8),
-        //   containerheight: 40,
-        //   containerwidth: double.infinity,
-        //   meterialColor: Colors.amber,
-        //   elevationsize: 20, text: 'Gift to Users Activation',
-        //   onTap: (){Navigator.push(context, MaterialPageRoute(builder: (_)=>const GiftActive()));},
-        //   )
-          
+        const SizedBox(
+          height: 30,
+        ),
+        MaterialButtons(
+          textcolor: Colors.white,
+          borderRadius: BorderRadius.circular(8),
+          containerheight: 40,
+          containerwidth: double.infinity,
+          meterialColor: Colors.amber,
+          elevationsize: 20,
+          text: 'Gift to Users Activation',
+          onTap: () {
+            Navigator.push(
+                context, MaterialPageRoute(builder: (_) => GiftOffersPage()));
+          },
+        )
       ],
     );
   }
 
- Widget _buildGiftOffersList() {
-  return ListView.builder(
-    shrinkWrap: true,
-    itemCount: _giftOffers.length,
-    itemBuilder: (context, index) {
-      final giftOffer = _giftOffers[index];
+  Widget _buildGiftOffersList() {
+    return ListView.builder(
+      shrinkWrap: true,
+      itemCount: _giftOffers.length,
+      itemBuilder: (context, index) {
+        final giftOffer = _giftOffers[index];
 
-      return GestureDetector(
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => GiftActive(giftOffer: giftOffer),
-            ),
-          );
-        },
-        child: Card(
-          color: Colors.white24,
-          child: ListTile(
-            leading: Image.network(
-              giftOffer.imageUrl,
-              loadingBuilder: (context, child, loadingProgress) {
-                if (loadingProgress == null) return child;
-                return Center(
-                  child: CircularProgressIndicator(
-                    value: loadingProgress.expectedTotalBytes != null
-                        ? loadingProgress.cumulativeBytesLoaded /
-                            loadingProgress.expectedTotalBytes!
-                        : null,
+        // Parse the expiry date
+        final DateTime expiryDate =
+            DateFormat('yyyy-MM-dd').parse(giftOffer.expiryDate);
+        final bool isExpired = DateTime.now().isAfter(expiryDate);
+
+        return GestureDetector(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => GiftActive(giftOffer: giftOffer),
+              ),
+            );
+          },
+          child: Card(
+            color: Colors.white24,
+            child: ListTile(
+              leading: Image.network(
+                giftOffer.imageUrl,
+                loadingBuilder: (context, child, loadingProgress) {
+                  if (loadingProgress == null) return child;
+                  return Center(
+                    child: CircularProgressIndicator(
+                      value: loadingProgress.expectedTotalBytes != null
+                          ? loadingProgress.cumulativeBytesLoaded /
+                              loadingProgress.expectedTotalBytes!
+                          : null,
+                    ),
+                  );
+                },
+                errorBuilder: (context, error, stackTrace) {
+                  print('Image load error: $error');
+                  print('Error details: ${stackTrace.toString()}');
+                  return GestureDetector(
+                      onTap: () => _launchURL(giftOffer.imageUrl),
+                      child: Image.asset("assets/images/img.jpg"));
+                },
+              ),
+              title: Text(
+                giftOffer.title,
+                style: const TextStyle(color: Colors.white),
+              ),
+              subtitle: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    giftOffer.description,
+                    style: const TextStyle(color: Colors.white70),
                   ),
-                );
-              },
-              errorBuilder: (context, error, stackTrace) {
-                print('Image load error: $error');
-                print('Error details: ${stackTrace.toString()}');
-                return GestureDetector(
-                    onTap: () => _launchURL(giftOffer.imageUrl),
-                    child: Image.asset("assets/images/img.jpg"));
-              },
-            ),
-            title: Text(
-              giftOffer.title,
-              style: const TextStyle(color: Colors.white),
-            ),
-            subtitle: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  giftOffer.description,
-                  style: const TextStyle(color: Colors.white70),
-                ),
-                Text(
-                  'Posted on: ${giftOffer.postDate}',
-                  style: const TextStyle(color: Colors.green),
-                ),
-                Text(
-                  'Expires on: ${giftOffer.expiryDate}',
-                  style: const TextStyle(color: Colors.red),
-                ),
-              ],
-            ),
-            trailing: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                IconButton(
-                  icon: const Icon(Icons.edit, color: Colors.white),
-                  onPressed: () => _updateGiftOffer(giftOffer),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.delete, color: Colors.red),
-                  onPressed: () => _deleteGiftOffer(giftOffer.key),
-                ),
-              ],
+                  Text(
+                    'Posted on: ${giftOffer.postDate}',
+                    style: const TextStyle(color: Colors.green),
+                  ),
+                  isExpired
+                      ? AnimatedTextKit(
+                          totalRepeatCount: 100,
+                          animatedTexts: [
+                            ColorizeAnimatedText(
+                              'Expired',
+                              textStyle: const TextStyle(
+                                fontSize: 24.0,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              colors: [
+                                Colors.red,
+                                Colors.red,
+                                Colors.white,
+                                Colors.orange,
+                                Colors.orange,
+                              ],
+                            ),
+                          ],
+                          isRepeatingAnimation: true,
+                        )
+                      : Text(
+                          'Expires on: ${DateFormat.yMMMd().format(expiryDate)}',
+                          style: const TextStyle(
+                            color: Colors.blue, // Blue for active
+                          ),
+                        ),
+                ],
+              ),
+              trailing: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.edit, color: Colors.white),
+                    onPressed: () => _updateGiftOffer(giftOffer),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.delete, color: Colors.red),
+                    onPressed: () => _deleteGiftOffer(giftOffer.key),
+                  ),
+                ],
+              ),
             ),
           ),
-        ),
-      );
-    },
-  );
-}
-
+        );
+      },
+    );
+  }
 
   void _launchURL(String url) async {
     if (await canLaunch(url)) {

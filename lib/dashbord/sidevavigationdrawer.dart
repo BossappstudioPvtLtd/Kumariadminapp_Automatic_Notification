@@ -8,7 +8,7 @@ import 'package:kumari_admin_web/auth/login.dart';
 import 'package:kumari_admin_web/dashbord/dash_bord.dart';
 import 'package:kumari_admin_web/pages/advertisement.dart';
 import 'package:kumari_admin_web/pages/driver_page.dart';
-import 'package:kumari_admin_web/pages/fere_oage.dart';
+import 'package:kumari_admin_web/pages/fere_page.dart';
 import 'package:kumari_admin_web/pages/gift_page.dart';
 import 'package:kumari_admin_web/pages/trips_page.dart';
 import 'package:kumari_admin_web/pages/user_page.dart';// Import the login screen

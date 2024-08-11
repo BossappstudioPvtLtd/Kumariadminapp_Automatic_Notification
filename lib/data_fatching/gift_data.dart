@@ -1,10 +1,12 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:kumari_admin_web/common_methods.dart';
+import 'package:kumari_admin_web/pages/gift_page.dart';
 
 class GiftData extends StatefulWidget {
-  const GiftData({super.key});
+  final void Function(String userId) onGiftOfferSelected;
+
+  const GiftData({super.key, required this.onGiftOfferSelected});
 
   @override
   State<GiftData> createState() => _GiftDataState();
@@ -14,7 +16,6 @@ class _GiftDataState extends State<GiftData> {
   final usersRecordsFromDatabase =
       FirebaseDatabase.instance.ref().child("users");
   final CommonMethods cMethods = CommonMethods();
-  final FirebaseAuth _auth = FirebaseAuth.instance;
 
   @override
   Widget build(BuildContext context) {
@@ -91,51 +92,21 @@ class _GiftDataState extends State<GiftData> {
                 ),
                 cMethods.data(
                   1,
-                  itemsList[index]["giftStatus"] == "off"
-                      ? MaterialButton(
-                          minWidth: 20,
-                          height: 25,
-                          color: const Color.fromARGB(255, 4, 33, 76),
-                          onPressed: () async {
-                            await FirebaseDatabase.instance
-                                .ref()
-                                .child("users")
-                                .child(itemsList[index]["id"])
-                                .update({
-                              "giftStatus": "on",
-                            });
-                            _checkAndLogout(itemsList[index][
-                                "id"]); // Modify or remove this based on your logic
-                          },
-                          child: const Text(
-                            " Active",
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        )
-                      : MaterialButton(
-                          minWidth: 20,
-                          height: 25,
-                          color: const Color.fromARGB(255, 4, 33, 76),
-                          onPressed: () async {
-                            await FirebaseDatabase.instance
-                                .ref()
-                                .child("users")
-                                .child(itemsList[index]["id"])
-                                .update({
-                              "giftStatus": "off",
-                            });
-                          },
-                          child: const Text(
-                            "Not active",
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
+                  MaterialButton(
+                    minWidth: 20,
+                    height: 25,
+                    color: const Color.fromARGB(255, 4, 33, 76),
+                    onPressed: () {
+                      widget.onGiftOfferSelected(itemsList[index]["id"]);
+                    },
+                    child: const Text(
+                      "Send Gift",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
                 ),
               ],
             );
@@ -143,14 +114,5 @@ class _GiftDataState extends State<GiftData> {
         );
       },
     );
-  }
-
-  Future<void> _checkAndLogout(String userId) async {
-    // Get the current user
-    // User? user = _auth.currentUser;
-    // if (user != null && user.uid == userId) {
-    //   // If the current user's ID matches the blocked user's ID, log them out
-    //   await _auth.signOut();
-    // }
   }
 }

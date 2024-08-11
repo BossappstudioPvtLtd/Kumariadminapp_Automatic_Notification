@@ -132,8 +132,7 @@ class _AdvertisementPageState extends State<AdvertisementPage> {
         },
       );
 
-      final storageRef = FirebaseStorage.instance.ref().child(
-          'advertisement_images/${DateTime.now().millisecondsSinceEpoch}.jpg');
+      final storageRef = FirebaseStorage.instance.ref().child('advertisement_images/${DateTime.now().millisecondsSinceEpoch}.jpg');
       final uploadTask = storageRef.putBlob(image);
       final snapshot = await uploadTask;
       final downloadUrl = await snapshot.ref.getDownloadURL();
@@ -609,20 +608,26 @@ class _AdvertisementPageState extends State<AdvertisementPage> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Padding(
+                    Flexible(
+                  child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 8.0),
                     child: Text(
                       'Posted on: ${advertisement.postDate}',
                       style: const TextStyle(color: Colors.green),
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
-                  Padding(
+                ),
+                  Flexible(
+                  child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 8.0),
                     child: Text(
                       'Expires on: ${advertisement.expiryDate}',
                       style: const TextStyle(color: Colors.red),
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
+                ),
                 
                 ],
               ),
