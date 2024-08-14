@@ -1,6 +1,5 @@
 import 'package:animated_text_kit/animated_text_kit.dart';
 import 'package:flutter/material.dart';
-import 'package:kumari_admin_web/common_methods.dart';
 
 class FarePage extends StatefulWidget {
   static const String id = "webPageFare";
@@ -10,56 +9,45 @@ class FarePage extends StatefulWidget {
   State<FarePage> createState() => _FarePageState();
 }
 
-CommonMethods cMethods = CommonMethods();
-
 class _FarePageState extends State<FarePage> {
   bool _isEditing = false;
-  List<Map<String, String>> fareData = [
-    {
-      'category': 'Autorickshaw',
-      'vehicle Fare': '₹50',
-      'kmFare': '₹5/km',
-      'Minutes Fare': '₹10',
-      'taxAmount (Gst)': '%5'
-    },
-    {
-      'category': 'XUVS',
-      'vehicle Fare': '₹100',
-      'kmFare': '₹10/km',
-      'Minutes Fare': '₹20',
-      'taxAmount (Gst)': '%10'
-    },
-    {
-      'category': 'premium',
-      'vehicle Fare': '₹150',
-      'kmFare': '₹15/km',
-      'Minutes Fare': '₹30',
-      'taxAmount (Gst)': '%15'
-    },
+  final fareData = [
+    {'category': 'Autorickshaw', 'vehicle Fare': '₹50', 'kmFare': '₹5/km', 'Minutes Fare': '₹10', 'taxAmount (Gst)': '%5'},
+    {'category': 'XUVS', 'vehicle Fare': '₹100', 'kmFare': '₹10/km', 'Minutes Fare': '₹20', 'taxAmount (Gst)': '%10'},
+    {'category': 'premium', 'vehicle Fare': '₹150', 'kmFare': '₹15/km', 'Minutes Fare': '₹30', 'taxAmount (Gst)': '%15'},
   ];
+  final distanceData = [
+    {'range': '0-5 km', 'surcharge': '₹0'},
+    {'range': '5-10 km', 'surcharge': '₹50'},
+    {'range': '10-20 km', 'surcharge': '₹100'},
+  ];
+  final controllers = <List<TextEditingController>>[];
+  final distanceControllers = <List<TextEditingController>>[];
+  final double _radiusLimit = 100000.0; // Admin-defined radius limit
 
-  // Controllers for each editable cell
-  List<List<TextEditingController>> controllers = [];
+  double _currentRadius = 1000.0;
+  double _currentSurcharge = 0.0;
 
   @override
   void initState() {
     super.initState();
-    // Initialize controllers
     for (var fare in fareData) {
-      controllers.add([
-        TextEditingController(text: fare['category']),
-        TextEditingController(text: fare['vehicle Fare']),
-        TextEditingController(text: fare['kmFare']),
-        TextEditingController(text: fare['Minutes Fare']),
-        TextEditingController(text: fare['taxAmount (Gst)']),
-      ]);
+      controllers.add(fare.values.map((value) => TextEditingController(text: value)).toList());
     }
+    for (var distance in distanceData) {
+      distanceControllers.add(distance.values.map((value) => TextEditingController(text: value)).toList());
+    }
+    _updateSurcharge();
   }
 
   @override
   void dispose() {
-    // Dispose controllers
     for (var controllerList in controllers) {
+      for (var controller in controllerList) {
+        controller.dispose();
+      }
+    }
+    for (var controllerList in distanceControllers) {
       for (var controller in controllerList) {
         controller.dispose();
       }
@@ -67,33 +55,71 @@ class _FarePageState extends State<FarePage> {
     super.dispose();
   }
 
-  void _toggleEditing() {
-    setState(() {
-      _isEditing = !_isEditing;
-    });
-  }
+  void _toggleEditing() => setState(() => _isEditing = !_isEditing);
 
   void _saveChanges() async {
-    // Implement your logic to save changes to the backend here.
-    // Example: await cMethods.uploadFareData(fareData);
-
-    // For now, just print the data to the console.
-    print('Saving data: $fareData');
-
-    // Toggle back to view mode
+    // Simulate saving data
+    print('Saving fare data: $fareData');
+    print('Saving distance data: $distanceData');
     _toggleEditing();
   }
 
-  void _updateFare(int index, String category, String vehicleFare,
-      String kmFare, String minFare, String taxAmount) {
+  void _updateFare(int index) {
     setState(() {
+      final radiusMultiplier = _currentRadius > _radiusLimit ? 1.5 : 1.0; // Increase fare by 50% if radius exceeds limit
       fareData[index] = {
-        'category': category,
-        'vehicle Fare': vehicleFare,
-        'kmFare': kmFare,
-        'Minutes Fare': minFare,
-        'taxAmount (Gst)': taxAmount,
+        'category': controllers[index][0].text,
+        'vehicle Fare': '₹${(double.parse(controllers[index][1].text.substring(1)) * radiusMultiplier).toStringAsFixed(2)}',
+        'kmFare': '₹${(double.parse(controllers[index][2].text.substring(1, controllers[index][2].text.length - 3)) * radiusMultiplier).toStringAsFixed(2)}/km',
+        'Minutes Fare': '₹${(double.parse(controllers[index][3].text.substring(1)) * radiusMultiplier).toStringAsFixed(2)}',
+        'taxAmount (Gst)': controllers[index][4].text,
       };
+    });
+  }
+
+  void _updateDistanceData(int index) {
+    setState(() {
+      distanceData[index] = {
+        'range': distanceControllers[index][0].text,
+        'surcharge': distanceControllers[index][1].text,
+      };
+      _updateSurcharge(); // Ensure surcharge is updated based on new data
+    });
+  }
+
+  void _updateSurcharge() {
+    double surcharge = 0.0;
+    for (var data in distanceData) {
+      final range = data['range']!;
+      final surchargeStr = data['surcharge']!;
+      if (range.contains('0-5') && _currentRadius <= 5 * 1000) {
+        surcharge = double.parse(surchargeStr.substring(1));
+      } else if (range.contains('5-10') && _currentRadius > 5 * 1000 && _currentRadius <= 10 * 1000) {
+        surcharge = double.parse(surchargeStr.substring(1));
+      } else if (range.contains('10-20') && _currentRadius > 10 * 1000 && _currentRadius <= 20 * 1000) {
+        surcharge = double.parse(surchargeStr.substring(1));
+      }
+    }
+    setState(() {
+      _currentSurcharge = surcharge;
+      // Update surcharge values in distanceData to reflect changes dynamically
+      for (var data in distanceData) {
+        final range = data['range']!;
+        if (range.contains('0-5') && _currentRadius <= 5 * 1000) {
+          data['surcharge'] = '₹${surcharge.toStringAsFixed(2)}';
+        } else if (range.contains('5-10') && _currentRadius > 5 * 1000 && _currentRadius <= 10 * 1000) {
+          data['surcharge'] = '₹${surcharge.toStringAsFixed(2)}';
+        } else if (range.contains('10-20') && _currentRadius > 10 * 1000 && _currentRadius <= 20 * 1000) {
+          data['surcharge'] = '₹${surcharge.toStringAsFixed(2)}';
+        }
+      }
+    });
+  }
+
+  void _updateRadius(double value) {
+    setState(() {
+      _currentRadius = value * _radiusLimit;
+      _updateSurcharge();
     });
   }
 
@@ -105,161 +131,35 @@ class _FarePageState extends State<FarePage> {
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: <Color>[
-              Color.fromARGB(255, 4, 33, 76),
-              Color.fromARGB(255, 6, 79, 188),
-            ],
+            colors: [Color.fromARGB(255, 4, 33, 76), Color.fromARGB(255, 6, 79, 188)],
           ),
         ),
         child: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Padding(
-                padding: const EdgeInsets.only(left: 10),
-                child: Container(
-                  height: 30,
-                  alignment: Alignment.topLeft,
-                  child: AnimatedTextKit(
-                    totalRepeatCount: DateTime.monthsPerYear,
-                    animatedTexts: [
-                      ScaleAnimatedText(
-                        'Manage Fare',
-                        textStyle: const TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                      ScaleAnimatedText(
-                        'Manage Fare',
-                        textStyle: const TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                      ScaleAnimatedText(
-                        'Manage Fare',
-                        textStyle: const TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(
-                height: 18,
-              ),
+              _buildHeader(),
+              const SizedBox(height: 18),
               Padding(
                 padding: const EdgeInsets.all(25),
                 child: Column(
                   children: [
-                    Container(
-                      height: 40,
-                      width: double.infinity,
-                      decoration: const BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                          colors: [
-                            Color.fromARGB(255, 12, 59, 131),
-                            Color.fromARGB(255, 4, 33, 76),
-                          ],
-                        ),
-                      ),
-                      child: const Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceAround,
-                        children: [
-                          Text(
-                            "Category",
-                            style: TextStyle(color: Colors.white),
-                          ),
-                          Text(
-                            "Vehicle Fare",
-                            style: TextStyle(color: Colors.white),
-                          ),
-                          Text(
-                            "  kilometer Fare",
-                            style: TextStyle(color: Colors.white),
-                          ),
-                          Text(
-                            "  Minutes Fare",
-                            style: TextStyle(color: Colors.white),
-                          ),
-                          Text(
-                            "Tax Amount (Gst)",
-                            style: TextStyle(color: Colors.white),
-                          ),
-                        ],
-                      ),
-                    ),
+                    _buildTableHeader(),
                     const SizedBox(height: 10),
-                    Table(
-                      border: TableBorder.all(color: Colors.black),
-                      children: [
-                        for (int i = 0; i < fareData.length; i++)
-                          _buildTableRow(
-                            i,
-                            fareData[i]['category']!,
-                            fareData[i]['vehicle Fare']!,
-                            fareData[i]['kmFare']!,
-                            fareData[i]['Minutes Fare']!,
-                            fareData[i]['taxAmount (Gst)']!,
-                          ),
-                      ],
-                    ),
-                    const SizedBox(
-                      height: 50,
-                    ),
-                    Container(
-                        height: 40,
-                        width: double.infinity,
-                        decoration: const BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter,
-                            colors: [
-                              Color.fromARGB(255, 12, 59, 131),
-                              Color.fromARGB(255, 4, 33, 76),
-                            ],
-                          ),
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.only(left: 600),
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              IconButton(
-                                icon: Icon(_isEditing ? Icons.save : Icons.edit,
-                                    color: Colors.white),
-                                onPressed:
-                                    _isEditing ? _saveChanges : _toggleEditing,
-                              ),
-                              GestureDetector(
-                                onTap: () {
-                                  if (_isEditing) {
-                                    _saveChanges();
-                                  } else {
-                                    _toggleEditing();
-                                  }
-                                },
-                                child: Text(
-                                  _isEditing ? "Save" : "Edit",
-                                  style: const TextStyle(color: Colors.white),
-                                ),
-                              ),
-                            ],
-                          ),
-                        )),
-                        Container(height: 4000,)
+                    _buildFareTable(),
+                    const SizedBox(height: 50),
+                    Text("Distance surcharge", style: TextStyle(color: Colors.white, fontSize: 30)),
+                    const SizedBox(height: 20),
+                    _buildDistanceTable(),
+                    const SizedBox(height: 20),
+                    _buildRadiusSection(),
+                    const SizedBox(height: 20),
+                    _buildActionButton(),
+                    const SizedBox(height: 20),
                   ],
                 ),
               ),
-
+              Container(height: 4000,),
             ],
           ),
         ),
@@ -267,63 +167,154 @@ class _FarePageState extends State<FarePage> {
     );
   }
 
-  TableRow _buildTableRow(int index, String category, String vehicleFare,
-      String kmFare, String minFare, String taxAmount) {
-    return TableRow(
-      children: [
-        _isEditing
-            ? _buildEditableCell(index, 0, category)
-            : _buildTableCell(category),
-        _isEditing
-            ? _buildEditableCell(index, 1, vehicleFare)
-            : _buildTableCell(vehicleFare),
-        _isEditing
-            ? _buildEditableCell(index, 2, kmFare)
-            : _buildTableCell(kmFare),
-        _isEditing
-            ? _buildEditableCell(index, 3, minFare)
-            : _buildTableCell(minFare),
-        _isEditing
-            ? _buildEditableCell(index, 4, taxAmount)
-            : _buildTableCell(taxAmount),
-      ],
-    );
-  }
-
-  Widget _buildTableCell(String text) {
+  Widget _buildHeader() {
     return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: Text(
-        text,
-        style: const TextStyle(color: Colors.white),
-        textAlign: TextAlign.center,
+      padding: const EdgeInsets.only(left: 10),
+      child: Container(
+        height: 30,
+        alignment: Alignment.topLeft,
+        child: AnimatedTextKit(
+          totalRepeatCount: DateTime.monthsPerYear,
+          animatedTexts: [
+            for (int i = 0; i < 3; i++)
+              ScaleAnimatedText(
+                'Manage Fare',
+                textStyle: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white),
+              ),
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildEditableCell(int rowIndex, int colIndex, String initialValue) {
-    var controller = controllers[rowIndex][colIndex];
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: TextField(
-        controller: controller,
-        style: const TextStyle(color: Colors.white),
-        textAlign: TextAlign.center,
-        decoration: const InputDecoration(
-          border: OutlineInputBorder(),
-          filled: true,
-          fillColor: Colors.transparent,
+  Widget _buildTableHeader() {
+    return Container(
+      height: 40,
+      width: double.infinity,
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [Color.fromARGB(255, 12, 59, 131), Color.fromARGB(255, 4, 33, 76)],
         ),
-        onChanged: (value) {
-          _updateFare(
-            rowIndex,
-            colIndex == 0 ? value : fareData[rowIndex]['category']!,
-            colIndex == 1 ? value : fareData[rowIndex]['vehicle Fare']!,
-            colIndex == 2 ? value : fareData[rowIndex]['kmFare']!,
-            colIndex == 3 ? value : fareData[rowIndex]['MinutesFare']!,
-            colIndex == 4 ? value : fareData[rowIndex]['taxAmount (Gst)']!,
-          );
-        },
+      ),
+      child: const Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: [
+          Text("Category", style: TextStyle(color: Colors.white)),
+          Text("Vehicle Fare", style: TextStyle(color: Colors.white)),
+          Text("Kilometer Fare", style: TextStyle(color: Colors.white)),
+          Text("Minutes Fare", style: TextStyle(color: Colors.white)),
+          Text("Tax Amount (Gst)", style: TextStyle(color: Colors.white)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFareTable() {
+    return Table(
+      border: TableBorder.all(color: Colors.black),
+      children: [
+        for (int i = 0; i < fareData.length; i++) _buildFareTableRow(i),
+      ],
+    );
+  }
+
+  TableRow _buildFareTableRow(int index) {
+    return TableRow(
+      children: [
+        _buildFareTableCell(index, 0),
+        _buildFareTableCell(index, 1),
+        _buildFareTableCell(index, 2),
+        _buildFareTableCell(index, 3),
+        _buildFareTableCell(index, 4),
+      ],
+    );
+  }
+
+  Widget _buildFareTableCell(int index, int column) {
+    final isEditing = _isEditing;
+    return Container(
+      alignment: Alignment.center,
+      height: 40,
+      child: isEditing
+          ? TextField(
+              controller: controllers[index][column],
+              onChanged: (_) => _updateFare(index),
+              decoration: const InputDecoration(
+                border: OutlineInputBorder(),
+                contentPadding: EdgeInsets.symmetric(horizontal: 8),
+              ),
+            )
+          : Text(fareData[index].values.elementAt(column),style: TextStyle(color: Colors.white),),
+    );
+  }
+
+  Widget _buildDistanceTable() {
+    return Table(
+      border: TableBorder.all(color: Colors.black),
+      children: [
+        for (int i = 0; i < distanceData.length; i++) _buildDistanceTableRow(i),
+      ],
+    );
+  }
+
+  TableRow _buildDistanceTableRow(int index) {
+    return TableRow(
+      children: [
+        _buildDistanceTableCell(index, 0),
+        _buildDistanceTableCell(index, 1),
+      ],
+    );
+  }
+
+  Widget _buildDistanceTableCell(int index, int column) {
+    final isEditing = _isEditing;
+    return Container(
+      alignment: Alignment.center,
+      height: 40,
+      child: isEditing
+          ? TextField(
+              controller: distanceControllers[index][column],
+              
+                
+              onChanged: (_) => _updateDistanceData(index),
+              decoration: const InputDecoration(
+                border: OutlineInputBorder(),
+                contentPadding: EdgeInsets.symmetric(horizontal: 8),
+              ),
+            )
+          : Text(distanceData[index].values.elementAt(column),style: TextStyle(color: Colors.white),),
+    );
+  }
+
+  Widget _buildRadiusSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text("Set Distance Radius", style: TextStyle(color: Colors.white, fontSize: 20)),
+        Slider(
+          value: _currentRadius / _radiusLimit,
+          onChanged: _updateRadius,
+          min: 0,
+          max: 1,
+          divisions: 10,
+          label: "${(_currentRadius / 1000).toStringAsFixed(0)} km",
+        ),
+        Text("Current Radius: ${(_currentRadius / 1000).toStringAsFixed(0)} km", style: TextStyle(color: Colors.white)),
+        Text("Current Surcharge: ₹${_currentSurcharge.toStringAsFixed(2)}", style: TextStyle(color: Colors.white)),
+      ],
+    );
+  }
+
+  Widget _buildActionButton() {
+    return Center(
+      child: ElevatedButton(
+        onPressed: _isEditing ? _saveChanges : _toggleEditing,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: _isEditing ? Colors.green : Colors.white,
+        ),
+        child: Text(_isEditing ? "Save Changes" : "Edit",style: TextStyle(color: Colors.black),),
       ),
     );
   }

@@ -518,6 +518,10 @@ class _AdvertisementPageState extends State<AdvertisementPage> {
       itemCount: _advertisements.length,
       itemBuilder: (context, index) {
         final advertisement = _advertisements[index];
+        
+        final DateTime expiryDate =
+            DateFormat('yyyy-MM-dd').parse(advertisement.expiryDate);
+        final bool isExpired = DateTime.now().isAfter(expiryDate);
 
         return Card(
           color: Colors.white24,
@@ -618,16 +622,43 @@ class _AdvertisementPageState extends State<AdvertisementPage> {
                     ),
                   ),
                 ),
-                  Flexible(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                    child: Text(
-                      'Expires on: ${advertisement.expiryDate}',
-                      style: const TextStyle(color: Colors.red),
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                ),
+                  isExpired
+                      ? Flexible(
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: AnimatedTextKit(
+                              totalRepeatCount: 100,
+                              animatedTexts: [
+                                ColorizeAnimatedText(
+                                  'Expired',
+                                  textStyle: const TextStyle(
+                                    fontSize: 24.0,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                  colors: [
+                                    Colors.red,
+                                    Colors.red,
+                                    Colors.white,
+                                    Colors.orange,
+                                    Colors.orange,
+                                  ],
+                                ),
+                              ],
+                              isRepeatingAnimation: true,
+                            ),
+                        ),
+                      )
+                      : Flexible(
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Text(
+                              'Expires on: ${DateFormat.yMMMd().format(expiryDate)}',
+                              style: const TextStyle(
+                                color: Colors.blue, // Blue for active
+                              ),
+                            ),
+                        ),
+                      ),
                 
                 ],
               ),
