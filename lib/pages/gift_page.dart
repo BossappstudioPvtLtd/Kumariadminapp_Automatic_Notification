@@ -181,25 +181,35 @@ class _GiftPageState extends State<GiftPage> {
         TextEditingController(text: offer.expiryDate);
 
     await showDialog(
+      barrierColor: Colors.transparent,
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text('Update Gift Offer'),
+          backgroundColor:
+              Color.fromARGB(255, 4, 33, 76) ,
+          title: const Text('Update Gift Offer',
+                  style: TextStyle(color: Colors.white),),
           content: SingleChildScrollView(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 TextField(
+                  style: TextStyle(color: Colors.white),
                   controller: titleController,
                   decoration: const InputDecoration(
+                    
+                    labelStyle: TextStyle(color: Colors.white70),
                     labelText: 'Title',
                     border: OutlineInputBorder(),
                   ),
                 ),
                 const SizedBox(height: 20),
                 TextField(
+                  
+                  style: TextStyle(color: Colors.white),
                   controller: descriptionController,
                   decoration: const InputDecoration(
+                    labelStyle: TextStyle(color: Colors.white70),
                     labelText: 'Description',
                     border: OutlineInputBorder(),
                   ),
@@ -209,8 +219,12 @@ class _GiftPageState extends State<GiftPage> {
                   onTap: () => _selectDate(postDateController),
                   child: AbsorbPointer(
                     child: TextField(
+                      
+                  style: TextStyle(color: Colors.white),
                       controller: postDateController,
                       decoration: const InputDecoration(
+                        
+                    labelStyle: TextStyle(color: Colors.white70),
                         labelText: 'Post Date ',
                         border: OutlineInputBorder(),
                       ),
@@ -223,8 +237,12 @@ class _GiftPageState extends State<GiftPage> {
                   onTap: () => _selectDate(expiryDateController),
                   child: AbsorbPointer(
                     child: TextField(
+                      
+                  style: TextStyle(color: Colors.white),
                       controller: expiryDateController,
                       decoration: const InputDecoration(
+                        
+                    labelStyle: TextStyle(color: Colors.white70),
                         labelText: 'Expiry Date ',
                         border: OutlineInputBorder(),
                       ),

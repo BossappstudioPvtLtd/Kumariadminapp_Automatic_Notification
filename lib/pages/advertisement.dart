@@ -132,7 +132,8 @@ class _AdvertisementPageState extends State<AdvertisementPage> {
         },
       );
 
-      final storageRef = FirebaseStorage.instance.ref().child('advertisement_images/${DateTime.now().millisecondsSinceEpoch}.jpg');
+      final storageRef = FirebaseStorage.instance.ref().child(
+          'advertisement_images/${DateTime.now().millisecondsSinceEpoch}.jpg');
       final uploadTask = storageRef.putBlob(image);
       final snapshot = await uploadTask;
       final downloadUrl = await snapshot.ref.getDownloadURL();
@@ -172,25 +173,34 @@ class _AdvertisementPageState extends State<AdvertisementPage> {
         TextEditingController(text: ad.expiryDate);
 
     await showDialog(
+      barrierColor: Colors.transparent,
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text('Update Advertisement'),
+          backgroundColor: Color.fromARGB(255, 4, 33, 76),
+          title: const Text(
+            'Update Advertisement',
+            style: TextStyle(color: Colors.white),
+          ),
           content: SingleChildScrollView(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 TextField(
+                  style: TextStyle(color: Colors.white),
                   controller: titleController,
                   decoration: const InputDecoration(
+                    labelStyle: TextStyle(color: Colors.white70),
                     labelText: 'Title',
                     border: OutlineInputBorder(),
                   ),
                 ),
                 const SizedBox(height: 20),
                 TextField(
+                  style: TextStyle(color: Colors.white),
                   controller: descriptionController,
                   decoration: const InputDecoration(
+                    labelStyle: TextStyle(color: Colors.white70),
                     labelText: 'Description',
                     border: OutlineInputBorder(),
                   ),
@@ -200,9 +210,11 @@ class _AdvertisementPageState extends State<AdvertisementPage> {
                   onTap: () => _selectDate(postDateController),
                   child: AbsorbPointer(
                     child: TextField(
+                      style: TextStyle(color: Colors.white),
                       controller: postDateController,
                       decoration: const InputDecoration(
-                        labelText: 'Post Date (yyyy-MM-dd)',
+                        labelStyle: TextStyle(color: Colors.white70),
+                        labelText: 'Post Date ',
                         border: OutlineInputBorder(),
                       ),
                       keyboardType: TextInputType.datetime,
@@ -214,9 +226,11 @@ class _AdvertisementPageState extends State<AdvertisementPage> {
                   onTap: () => _selectDate(expiryDateController),
                   child: AbsorbPointer(
                     child: TextField(
+                      style: TextStyle(color: Colors.white),
                       controller: expiryDateController,
                       decoration: const InputDecoration(
-                        labelText: 'Expiry Date (yyyy-MM-dd)',
+                        labelStyle: TextStyle(color: Colors.white70),
+                        labelText: 'Expiry Date ',
                         border: OutlineInputBorder(),
                       ),
                       keyboardType: TextInputType.datetime,
@@ -518,7 +532,7 @@ class _AdvertisementPageState extends State<AdvertisementPage> {
       itemCount: _advertisements.length,
       itemBuilder: (context, index) {
         final advertisement = _advertisements[index];
-        
+
         final DateTime expiryDate =
             DateFormat('yyyy-MM-dd').parse(advertisement.expiryDate);
         final bool isExpired = DateTime.now().isAfter(expiryDate);
@@ -554,10 +568,13 @@ class _AdvertisementPageState extends State<AdvertisementPage> {
                         );
                       },
                     ),
-                    
-                    Center(child: GestureDetector(
-                      onTap: ()=>_launchURL(advertisement.imageUrl),
-                      child: const Text("Click here",style: TextStyle(color: Colors.white),))),
+                    Center(
+                        child: GestureDetector(
+                            onTap: () => _launchURL(advertisement.imageUrl),
+                            child: const Text(
+                              "Click here",
+                              style: TextStyle(color: Colors.white),
+                            ))),
                     ButtonBar(
                       alignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -568,20 +585,19 @@ class _AdvertisementPageState extends State<AdvertisementPage> {
                           child: IconButton(
                             hoverColor: const Color.fromARGB(255, 10, 30, 63),
                             icon: const Icon(Icons.edit, color: Colors.white),
-                            onPressed: () => _updateAdvertisement(advertisement),
+                            onPressed: () =>
+                                _updateAdvertisement(advertisement),
                           ),
                         ),
                         const SizedBox(
                           width: BorderSide.strokeAlignCenter,
                         ),
                         Material(
-                          
                           color: Colors.white24,
                           elevation: 20,
-                          
                           borderRadius: BorderRadius.circular(32),
                           child: IconButton(
-                            hoverColor:  const Color.fromARGB(255, 10, 30, 63),
+                            hoverColor: const Color.fromARGB(255, 10, 30, 63),
                             icon: const Icon(Icons.delete, color: Colors.red),
                             onPressed: () =>
                                 _deleteAdvertisement(advertisement.key),
@@ -612,21 +628,21 @@ class _AdvertisementPageState extends State<AdvertisementPage> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                    Flexible(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                    child: Text(
-                      'Posted on: ${advertisement.postDate}',
-                      style: const TextStyle(color: Colors.green),
-                      overflow: TextOverflow.ellipsis,
+                  Flexible(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                      child: Text(
+                        'Posted on: ${advertisement.postDate}',
+                        style: const TextStyle(color: Colors.green),
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
                   ),
-                ),
                   isExpired
                       ? Flexible(
-                        child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: AnimatedTextKit(
+                          child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: AnimatedTextKit(
                               totalRepeatCount: 100,
                               animatedTexts: [
                                 ColorizeAnimatedText(
@@ -646,23 +662,24 @@ class _AdvertisementPageState extends State<AdvertisementPage> {
                               ],
                               isRepeatingAnimation: true,
                             ),
-                        ),
-                      )
+                          ),
+                        )
                       : Flexible(
-                        child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Text(
+                          child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Text(
                               'Expires on: ${DateFormat.yMMMd().format(expiryDate)}',
                               style: const TextStyle(
                                 color: Colors.blue, // Blue for active
                               ),
                             ),
+                          ),
                         ),
-                      ),
-                
                 ],
               ),
-              const SizedBox(height: 20,)
+              const SizedBox(
+                height: 20,
+              )
             ],
           ),
         );

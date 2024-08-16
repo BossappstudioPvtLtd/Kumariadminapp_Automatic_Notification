@@ -101,8 +101,10 @@ class _AdminUpdateState extends State<AdminUpdate> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
+        height: 400,
+        width: 300,
         decoration: const BoxDecoration(
-          borderRadius: BorderRadius.all(Radius.circular(5)),
+          borderRadius: BorderRadius.all(Radius.circular(16)),
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,

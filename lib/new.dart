@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 
 
 class SpinnerAnimated extends StatefulWidget {
-  const SpinnerAnimated({Key? key}) : super(key: key);
+  const SpinnerAnimated({super.key});
 
   @override
   State<SpinnerAnimated> createState() => _SpinnerAnimatedState();
