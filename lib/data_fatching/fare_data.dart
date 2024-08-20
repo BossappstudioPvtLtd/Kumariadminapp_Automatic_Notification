@@ -122,7 +122,7 @@ class _FareDataWebPanelState extends State<FareDataWebPanel> {
       children: [
         'Category',
         'Vehicle Fare (₹)',
-        'KM Fare (₹)',
+        'PER KM Fare (₹)',
         'Minutes Fare (₹)',
         'Tax Amount (%)',
         'Edit&Updation'
