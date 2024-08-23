@@ -8,6 +8,7 @@ import 'package:kumari_admin_web/auth/login.dart';
 import 'package:kumari_admin_web/dashbord/dash_bord.dart';
 import 'package:kumari_admin_web/pages/advertisement.dart';
 import 'package:kumari_admin_web/pages/driver_page.dart';
+import 'package:kumari_admin_web/pages/earnings.dart';
 import 'package:kumari_admin_web/pages/fere_page.dart';
 import 'package:kumari_admin_web/pages/gift_page.dart';
 import 'package:kumari_admin_web/pages/trips_page.dart';
@@ -63,15 +64,21 @@ class _SideNavigationDrawerState extends State<SideNavigationDrawer> {
           chosenScreen = const FarePage();
         });
         break;
-        
+         case EarningsPage.id:
+      setState(() {
+        chosenScreen = const EarningsPage();
+      });
+     break;
       case GiftPage.id:
       setState(() {
         chosenScreen = const GiftPage();
       });
+       break;
        case AdvertisementPage.id:
       setState(() {
         chosenScreen = const AdvertisementPage();
       });
+      
     }
   }
 
@@ -141,6 +148,11 @@ class _SideNavigationDrawerState extends State<SideNavigationDrawer> {
               title: "Advertisement",
               route: AdvertisementPage.id,
             icon: CupertinoIcons.rectangle_3_offgrid_fill, ),
+              AdminMenuItem(
+              title: "Earnings",
+              route: EarningsPage.id,
+            icon:Icons.graphic_eq_sharp, ),
+             
              
         ],
         selectedRoute: DriversPage.id,
