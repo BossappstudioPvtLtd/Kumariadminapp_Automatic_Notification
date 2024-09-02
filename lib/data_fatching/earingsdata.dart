@@ -14,6 +14,25 @@ class CombinedDataPage extends StatefulWidget {
 class _CombinedDataPageState extends State<CombinedDataPage> {
   final driversRef = FirebaseDatabase.instance.ref().child("drivers");
   final tripsRef = FirebaseDatabase.instance.ref().child("tripRequests");
+  final commissionRef = FirebaseDatabase.instance.ref().child("commissions").child("current");
+   
+  
+  double commissionPercentage = 0.10; @override
+  void initState() {
+    super.initState();
+    _fetchCommissionPercentage();
+  }
+
+  Future<void> _fetchCommissionPercentage() async {
+    final snapshot = await commissionRef.child("commissionPercentage").get();
+    if (snapshot.exists) {
+      setState(() {
+        commissionPercentage = double.tryParse(snapshot.value.toString()) ?? 0.10;
+      });
+    }
+  }
+
+
 
   void _showDriverDetails(BuildContext context, Map<String, dynamic> driver) {
     final carDetails = driver["car_details"] ?? {};
@@ -95,7 +114,8 @@ class _CombinedDataPageState extends State<CombinedDataPage> {
                 final rows = dataMap.entries.map((entry) {
                   final trip = entry.value as Map<dynamic, dynamic>;
                   final fareAmount = double.tryParse(trip["fareAmount"]?.toString() ?? '0') ?? 0.0;
-                  final commissionAmount = fareAmount * 0.10;
+                   final commissionAmount = fareAmount * (commissionPercentage / 100);
+                 
                   totalCommission += commissionAmount;
       
                   return DataRow(
@@ -123,7 +143,7 @@ class _CombinedDataPageState extends State<CombinedDataPage> {
                           DataColumn(label: Text('Drop Off Address')),
                           DataColumn(label: Text('Pick Up Address')),
                           DataColumn(label: Text('Original Fare Amount')),
-                          DataColumn(label: Text('Commission (10%)')),
+                          DataColumn(label: Text('Commission (%)')),
                           DataColumn(label: Text('Publish Date Time')),
                         ],
                         rows: rows,
@@ -147,16 +167,15 @@ class _CombinedDataPageState extends State<CombinedDataPage> {
                meterialColor: Colors.black,
               text: 'Close',
               textcolor: Colors.white, elevationsize: 20,
-            ),
-          ),
-        ],
-      ),
+             ),
+           ),
+         ],
+       ),
+     ),
     ),
   ),
-),
-
-    );
-  }
+ );
+}
 
   String _formatCurrency(dynamic amount) {
     final formatter = NumberFormat.currency(locale: 'en_US', symbol: '', decimalDigits: 2);
@@ -171,7 +190,7 @@ class _CombinedDataPageState extends State<CombinedDataPage> {
   EdgeInsets get _padding => const EdgeInsets.symmetric(vertical: 10.0, horizontal: 5.0);
   Widget get _errorWidget => const Center(child: Text("Error Occurred. Try Later.", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 24, color: Color.fromARGB(255, 4, 33, 76))));
   Widget get _loadingWidget => const Center(child: CircularProgressIndicator());
-  Widget get _noDataWidget => const Center(child: Text("No data available.", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 24, color: Color.fromARGB(255, 4, 33, 76))));
+  Widget get _noDataWidget => const Center(child: Text("No data available.", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 24, color: Color.fromARGB(255, 255, 255, 255))));
   
   @override
   Widget build(BuildContext context) {
