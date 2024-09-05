@@ -27,7 +27,7 @@ class _TripsDataListState extends State<TripsDataList> {
     if (await canLaunchUrl(Uri.parse(directionAPIUrl))) {
       await launchUrl(Uri.parse(directionAPIUrl));
     } else {
-      throw "Could not lauch google map";
+      throw "Could not launch Google Maps";
     }
   }
 
@@ -55,51 +55,130 @@ class _TripsDataListState extends State<TripsDataList> {
           );
         }
 
-        Map dataMap = snapshotData.data!.snapshot.value as Map;
-        List itemsList = [];
-        dataMap.forEach((key, value) {
-          itemsList.add({"key": key, ...value});
-        });
+        // Check if the data is not null and is a Map before proceeding
+        if (snapshotData.data?.snapshot.value != null &&
+            snapshotData.data!.snapshot.value is Map) {
+          Map dataMap = snapshotData.data!.snapshot.value as Map;
+          List itemsList = [];
+          dataMap.forEach((key, value) {
+            itemsList.add({"key": key, ...value});
+          });
 
-        return ListView.builder(
-          shrinkWrap: true,
-          itemCount: itemsList.length,
-          itemBuilder: ((context, index) {
-            if (itemsList[index]["status"] != null &&
-                itemsList[index]["status"] == "ended") {
-              return Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  cMethods.data(2,Text(itemsList[index]["tripID"].toString(),style: const TextStyle(color: Colors.white),),),
-                  cMethods.data( 1,Text(itemsList[index]["userName"].toString(),style: const TextStyle(color: Colors.white),),),
-                  cMethods.data( 1,Text(itemsList[index]["driverName"].toString(),style: const TextStyle(color: Colors.white),),),
-                  cMethods.data(1,Text(itemsList[index]["carDetails"].toString(),style: const TextStyle(color: Colors.white),),),
-                  cMethods.data(1,Text(itemsList[index]["publishDateTime"].toString(),style: const TextStyle(color: Colors.white),),),
-                  cMethods.data( 1,Text("₹ ${itemsList[index]["fareAmount"]}",style: const TextStyle(color: Colors.white),),),
-                  cMethods.data( 1,
+          // If the itemsList is empty, display a message
+          if (itemsList.isEmpty) {
+            return const Center(
+              child: Text(
+                "No completed trips found.",
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 24,
+                  color: Color.fromARGB(255, 4, 33, 76),
+                ),
+              ),
+            );
+          }
 
-
-                  MaterialButton(
-                    color: const Color.fromARGB(255, 4, 33, 76),
-                  splashColor: Colors.grey,
-                  onPressed: () {
-                    
-                        String pickUpLat  = itemsList[index]["pickUpLatLng"]["latitude"];
-                        String pickUpLng  = itemsList[index]["pickUpLatLng"]["longitude"];
-                        String dropOffLat = itemsList[index]["dropOffLatLng"]["latitude"];
-                        String dropOffLng = itemsList[index]["dropOffLatLng"]["longitude"];
-
-                  launchGoogleMapFromSourceToDestination(pickUpLat, pickUpLng,dropOffLat,dropOffLng,);},
-                  child: const Text( "View More", style: TextStyle( color: Colors.white, fontWeight: FontWeight.bold,), ),
+          return ListView.builder(
+            shrinkWrap: true,
+            itemCount: itemsList.length,
+            itemBuilder: ((context, index) {
+              if (itemsList[index]["status"] != null &&
+                  itemsList[index]["status"] == "ended") {
+                return Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    cMethods.data(
+                      2,
+                      Text(
+                        itemsList[index]["tripID"].toString(),
+                        style: const TextStyle(color: Colors.white),
+                      ),
                     ),
-                  ),
-                ],
-              );
-            } else {
-              return Container();
-            }
-          }),
-        );
+                    cMethods.data(
+                      1,
+                      Text(
+                        itemsList[index]["userName"].toString(),
+                        style: const TextStyle(color: Colors.white),
+                      ),
+                    ),
+                    cMethods.data(
+                      1,
+                      Text(
+                        itemsList[index]["driverName"].toString(),
+                        style: const TextStyle(color: Colors.white),
+                      ),
+                    ),
+                    cMethods.data(
+                      1,
+                      Text(
+                        itemsList[index]["carDetails"].toString(),
+                        style: const TextStyle(color: Colors.white),
+                      ),
+                    ),
+                    cMethods.data(
+                      1,
+                      Text(
+                        itemsList[index]["publishDateTime"].toString(),
+                        style: const TextStyle(color: Colors.white),
+                      ),
+                    ),
+                    cMethods.data(
+                      1,
+                      Text(
+                        "₹ ${itemsList[index]["fareAmount"]}",
+                        style: const TextStyle(color: Colors.white),
+                      ),
+                    ),
+                    cMethods.data(
+                      1,
+                      MaterialButton(
+                        color: const Color.fromARGB(255, 4, 33, 76),
+                        splashColor: Colors.grey,
+                        onPressed: () {
+                          String pickUpLat =
+                              itemsList[index]["pickUpLatLng"]["latitude"];
+                          String pickUpLng =
+                              itemsList[index]["pickUpLatLng"]["longitude"];
+                          String dropOffLat =
+                              itemsList[index]["dropOffLatLng"]["latitude"];
+                          String dropOffLng =
+                              itemsList[index]["dropOffLatLng"]["longitude"];
+
+                          launchGoogleMapFromSourceToDestination(
+                            pickUpLat,
+                            pickUpLng,
+                            dropOffLat,
+                            dropOffLng,
+                          );
+                        },
+                        child: const Text(
+                          "View More",
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                );
+              } else {
+                return Container();
+              }
+            }),
+          );
+        } else {
+          return const Center(
+            child: Text(
+              "No completed trips found.",
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 24,
+                color: Color.fromARGB(255, 4, 33, 76),
+              ),
+            ),
+          );
+        }
       },
     );
   }

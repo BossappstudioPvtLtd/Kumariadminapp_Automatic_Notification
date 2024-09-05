@@ -31,34 +31,83 @@ class _FareDataWebPanelState extends State<FareDataWebPanel> {
   Future<List<Map<String, dynamic>>> _fetchFareOffers() async {
     final event = await _database.once();
     final data = event.snapshot.value as Map<dynamic, dynamic>?;
-    return data?.entries.map((entry) {
-          final value = entry.value as Map<dynamic, dynamic>;
-          return {
-            'key': entry.key,
-            'category': value['category'],
-            'Minutes Fare': value['Minutes Fare'],
-            'kmFare': value['kmFare'],
-            'taxAmount (Gst)': value['taxAmount (Gst)'],
-            'vehicle Fare': value['vehicle Fare'],
-          };
-        }).toList() ??
-        [];
+
+    if (data == null || data.isEmpty) {
+      final defaultFareData = {
+        'Autorickshaw': {
+          'category': 'Autorickshaw',
+          'Minutes Fare': '0',
+          'kmFare': '0',
+          'taxAmount (Gst)': '0',
+          'vehicle Fare': '0',
+        },
+        'SUVs': {
+          'category': 'SUVs',
+          'Minutes Fare': '0',
+          'kmFare': '0',
+          'taxAmount (Gst)': '0',
+          'vehicle Fare': '0',
+        },
+        'Premium': {
+          'category': 'Premium',
+          'Minutes Fare': '0',
+          'kmFare': '0',
+          'taxAmount (Gst)': '0',
+          'vehicle Fare': '0',
+        },
+      };
+
+      await _database.set(defaultFareData);
+
+      return defaultFareData.entries.map((entry) {
+        final value = entry.value as Map<dynamic, dynamic>;
+        return {
+          'key': entry.key,
+          'category': value['category'],
+          'Minutes Fare': value['Minutes Fare'],
+          'kmFare': value['kmFare'],
+          'taxAmount (Gst)': value['taxAmount (Gst)'],
+          'vehicle Fare': value['vehicle Fare'],
+        };
+      }).toList();
+    }
+
+    return data.entries.map((entry) {
+      final value = entry.value as Map<dynamic, dynamic>;
+      return {
+        'key': entry.key,
+        'category': value['category'],
+        'Minutes Fare': value['Minutes Fare'],
+        'kmFare': value['kmFare'],
+        'taxAmount (Gst)': value['taxAmount (Gst)'],
+        'vehicle Fare': value['vehicle Fare'],
+      };
+    }).toList();
   }
 
   Future<void> _updateFareData() async {
     if (_formKey.currentState?.validate() ?? false) {
-      await _database.child(_selectedKey!).update({
-        'category': _controllers['category']!.text,
-        'Minutes Fare': _controllers['Minutes Fare']!.text,
-        'kmFare': _controllers['kmFare']!.text,
-        'taxAmount (Gst)': _controllers['taxAmount (Gst)']!.text,
-        'vehicle Fare': _controllers['vehicle Fare']!.text,
-      });
-      Navigator.of(context).pop();
-      setState(() {
-        _fareDatasList = _fetchFareOffers();
-      });
+      if (_selectedKey != null) {
+        await _database.child(_selectedKey!).update({
+          'category': _controllers['category']!.text,
+          'Minutes Fare': _controllers['Minutes Fare']!.text,
+          'kmFare': _controllers['kmFare']!.text,
+          'taxAmount (Gst)': _controllers['taxAmount (Gst)']!.text,
+          'vehicle Fare': _controllers['vehicle Fare']!.text,
+        });
+        Navigator.of(context).pop();
+        setState(() {
+          _fareDatasList = _fetchFareOffers();
+        });
+      }
     }
+  }
+
+  Future<void> _deleteFareData(String key) async {
+    await _database.child(key).remove();
+    setState(() {
+      _fareDatasList = _fetchFareOffers();
+    });
   }
 
   void _showForm({String? key}) async {
@@ -71,6 +120,7 @@ class _FareDataWebPanelState extends State<FareDataWebPanel> {
       _selectedKey = key;
     } else {
       _controllers.forEach((key, controller) => controller.clear());
+      _selectedKey = null;
     }
     showDialog(
       barrierColor: Colors.transparent,
@@ -125,7 +175,7 @@ class _FareDataWebPanelState extends State<FareDataWebPanel> {
         'PER KM Fare (₹)',
         'Minutes Fare (₹)',
         'Tax Amount (%)',
-        'Edit&Updation'
+        'Actions'
       ]
           .map((text) => Expanded(
                 child: Container(
@@ -140,9 +190,8 @@ class _FareDataWebPanelState extends State<FareDataWebPanel> {
                       ],
                     ),
                     border: Border.all(
-                      // Add a border to the container
-                      color: Colors.black, // Color of the border
-                      width: 1.0, // Border width
+                      color: Colors.black,
+                      width: 1.0,
                     ),
                   ),
                   child: Text(
@@ -160,8 +209,8 @@ class _FareDataWebPanelState extends State<FareDataWebPanel> {
     return Container(
       decoration: BoxDecoration(
         border: Border.all(
-          color: Colors.white10, // Border around the entire column
-          width: 1.0, // Thickness of the column border
+          color: Colors.white10,
+          width: 1.0,
         ),
       ),
       child: Column(
@@ -172,8 +221,8 @@ class _FareDataWebPanelState extends State<FareDataWebPanel> {
               decoration: const BoxDecoration(
                 border: Border(
                   bottom: BorderSide(
-                    color: Colors.white10, // Border color between rows
-                    width: 1.0, // Thickness of row borders
+                    color: Colors.white10,
+                    width: 1.0,
                   ),
                 ),
               ),
@@ -195,9 +244,17 @@ class _FareDataWebPanelState extends State<FareDataWebPanel> {
                   Expanded(
                       child: Text(fare['taxAmount (Gst)']!,
                           style: const TextStyle(color: Colors.white))),
-                  IconButton(
-                    icon: const Icon(Icons.edit, color: Colors.white),
-                    onPressed: () => _showForm(key: fare['key']),
+                  Row(
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.edit, color: Colors.white),
+                        onPressed: () => _showForm(key: fare['key']),
+                      ),
+                      // IconButton(
+                      //   icon: const Icon(Icons.delete, color: Colors.red),
+                      //   onPressed: () => _deleteFareData(fare['key']),
+                      // ),
+                    ],
                   ),
                 ],
               ),

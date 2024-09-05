@@ -32,11 +32,68 @@ class _FarePageState extends State<FarePage> {
   @override
   void initState() {
     super.initState();
+    _fetchRadiusData();
   }
 
   @override
   void dispose() {
     super.dispose();
+  }
+
+  Future<void> _fetchRadiusData() async {
+    try {
+      final snapshot = await _radiusRef.once();
+      if (snapshot.snapshot.value != null) {
+        setState(() {
+          radiusData = (snapshot.snapshot.value as Map).entries.map((entry) {
+            return {
+              'category': entry.key,
+              'radius': double.parse(entry.value['radius'].toString()),
+            };
+          }).toList();
+        });
+      } else {
+        _promptToAddData();
+      }
+    } catch (e) {
+      print("Error fetching data: $e");
+    }
+  }
+
+  void _promptToAddData() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text("No Data Found"),
+        content: Text("No radius data found. Would you like to add default data?"),
+        actions: [
+          TextButton(
+            onPressed: () {
+              _addDefaultData();
+              Navigator.of(context).pop();
+            },
+            child: Text("Yes"),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            child: Text("No"),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _addDefaultData() async {
+    try {
+      for (var data in radiusData) {
+        await _radiusRef.child(data['category']).set(data);
+      }
+      _fetchRadiusData();
+    } catch (e) {
+      print("Error adding default data: $e");
+    }
   }
 
   void _updateRadius(double value) {
@@ -56,9 +113,7 @@ class _FarePageState extends State<FarePage> {
     _toggleEditing();
   }
 
-  void _saveRadius(String category) 
-  {
-    
+  void _saveRadius(String category) {
     setState(() {
       final index =
           radiusData.indexWhere((data) => data['category'] == category);
@@ -130,7 +185,6 @@ class _FarePageState extends State<FarePage> {
           totalRepeatCount: DateTime.monthsPerYear,
           animatedTexts: [
             ScaleAnimatedText(
-              
               'Fare Management ',
               textStyle: const TextStyle(
                 fontSize: 22,
@@ -208,12 +262,10 @@ class _FarePageState extends State<FarePage> {
               _buildTableCell(data['category']!),
               _buildTextField(data['radius'].toStringAsFixed(1),
                   index: radiusData.indexOf(data), fieldIndex: 1),
-                  
             ],
           ),
-         RadiusOffersPage(),
+        RadiusOffersPage(),
       ],
-      
     );
   }
 
@@ -267,7 +319,6 @@ class _FarePageState extends State<FarePage> {
                 text: 'Save SUVs',
               ),
             ),
-            
             SizedBox(width: 10,),
             Expanded(
               child: MaterialButtons(
@@ -283,8 +334,23 @@ class _FarePageState extends State<FarePage> {
             ),
           ],
         ),
-       
-            
+        const SizedBox(height: 20),
+        MaterialButtons(
+          meterialColor: const Color.fromARGB(255, 4, 33, 76),
+          containerheight: 30,
+          borderRadius: BorderRadius.circular(8),
+          containerwidth: 120,
+          textcolor: Colors.white,
+          onTap: () {
+            if (_isEditing) {
+              _saveChanges();
+            } else {
+              _toggleEditing();
+            }
+          },
+          elevationsize: 20,
+          text: _isEditing ? 'Save Changes' : 'Edit',
+        ),
       ],
     );
   }
